@@ -70,7 +70,11 @@ module Pact
 
     def run_default_server(app, port)
       require 'rack/handler/webrick'
-      Rack::Handler::WEBrick.run(app, webrick_opts)
+      port = nil
+      Rack::Handler::WEBrick.run(app, webrick_opts) do |server|
+        port = server[:Port]
+      end
+      port
     end
 
     def get_identity
@@ -97,10 +101,9 @@ module Pact
 
     def boot
       unless responsive?
-        Pact::Server.ports[@app.object_id] = @port
-
         @server_thread = Thread.new do
-          run_default_server(@middleware, @port)
+          # TODO: Thread-safe
+          Pact::Server.ports[@app.object_id] = run_default_server(@middleware, @port)
         end
 
         Timeout.timeout(60) { @server_thread.join(0.1) until responsive? }

@@ -143,6 +143,7 @@ module Pact
       def spawn
         logger.info "Starting app #{self}..."
         @server = Pact::Server.new(app, port).boot
+        # Re-write @port
         @spawned = true
         logger.info "Started on port #{port}"
       end
